@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class InstanceCreatorMap<C> implements Collection<InstanceCreator<C, ?>> {
+public class InstanceCreatorMap<C> implements Collection<InstanceCreator<C, ?>>, Cloneable {
     Map<Class<?>, InstanceCreator<C, ?>> map = new HashMap<>();
 
 
@@ -83,5 +83,17 @@ public class InstanceCreatorMap<C> implements Collection<InstanceCreator<C, ?>> 
 
     public void clear() {
         map.clear();
+    }
+
+    public InstanceCreatorMap<C> clone() {
+        try {
+            //noinspection unchecked
+            InstanceCreatorMap<C> map = (InstanceCreatorMap<C>) super.clone();
+            map.map = new HashMap<>();
+            map.addAll(this);
+            return map;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -96,6 +96,7 @@ $RECYCLE.BIN/
 *.lnk
 
 EdenConfigPaper/target/
+EdenConfigCore/target/
 
 pom.xml.tag
 pom.xml.releaseBackup

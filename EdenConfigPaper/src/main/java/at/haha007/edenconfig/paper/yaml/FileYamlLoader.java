@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Builder
-public class YamlConfigLoader implements ConfigurationLoader<ConfigurationSection> {
+public class FileYamlLoader implements ConfigurationLoader<ConfigurationSection> {
 
     @NonNull
     private final File file;
