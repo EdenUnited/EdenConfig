@@ -19,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.util.List;
 
 @Builder
 public class PaperConfigurationManager {
@@ -28,15 +29,27 @@ public class PaperConfigurationManager {
 
     static {
         InstanceCreatorMap<ConfigurationSection> map = new InstanceCreatorMap<>();
-        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getString, String.class));
-        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getInt, Integer.class));
-        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getItemStack, ItemStack.class));
+
         map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getBoolean, Boolean.class));
-        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getColor, Color.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getBoolean, boolean.class));
+
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getInt, Integer.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getInt, int.class));
+
+        map.add(new YamlDefaultInstanceCreator<>((c, k) -> (float) c.getDouble(k), Float.class));
+        map.add(new YamlDefaultInstanceCreator<>((c, k) -> (float) c.getDouble(k), float.class));
+
         map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getDouble, Double.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getDouble, double.class));
+
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getString, String.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getItemStack, ItemStack.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getColor, Color.class));
         map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getLocation, Location.class));
         map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getVector, Vector.class));
         map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getOfflinePlayer, OfflinePlayer.class));
+        map.add(new YamlDefaultInstanceCreator<>(ConfigurationSection::getList, List.class));
+        
         GLOBAL_YAML_INSTANCE_CREATOR_MAP = map;
     }
 

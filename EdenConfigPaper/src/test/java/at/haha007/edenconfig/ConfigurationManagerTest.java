@@ -12,6 +12,7 @@ import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.io.File;
+import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConfigurationManagerTest {
@@ -31,6 +32,45 @@ public class ConfigurationManagerTest {
                 .plugin(plugin)
                 .build();
         Assertions.assertNotNull(manager);
+    }
+
+
+    @Test
+    void injectNullTest(){
+        class Test {
+            @ConfigInjected
+            List<String> list = List.of("a", "b");
+            @ConfigInjected
+            int i = 2;
+        }
+        Test test = new Test();
+        YamlConfiguration config = new YamlConfiguration();
+        Configurator<ConfigurationSection> configurator = manager.createYamlConfigurator();
+        configurator.config(config);
+        configurator.inject(test);
+
+        Assertions.assertNull(test.list);
+        Assertions.assertEquals(0, test.i);
+    }
+
+    @Test
+    void listTest() {
+        class Test {
+            @ConfigInjected
+            List<String> list = List.of("a", "b");
+        }
+        Test test = new Test();
+        YamlConfiguration config = new YamlConfiguration();
+        Configurator<ConfigurationSection> configurator = manager.createYamlConfigurator();
+        configurator.config(config);
+        configurator.save(test);
+
+        Assertions.assertEquals("a", config.getStringList("list").get(0));
+
+        test.list = null;
+        configurator.inject(test);
+
+        Assertions.assertEquals("a", test.list.get(0));
     }
 
     @Test
