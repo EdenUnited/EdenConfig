@@ -34,9 +34,52 @@ public class ConfigurationManagerTest {
         Assertions.assertNotNull(manager);
     }
 
+    @Test
+    void annotationNameTest() {
+        class A {
+            @ConfigInjected
+            int i = 2;
+        }
+        class B {
+            @ConfigInjected(name = "i")
+            int j = 0;
+        }
+        A a = new A();
+        B b = new B();
+
+        YamlConfiguration config = new YamlConfiguration();
+        Configurator<ConfigurationSection> configurator = manager.createYamlConfigurator();
+        configurator.config(config);
+        configurator.save(a);
+        configurator.inject(b);
+
+        Assertions.assertEquals(2, b.j);
+    }
 
     @Test
-    void injectNullTest(){
+    void inheritanceTest() {
+        abstract class A {
+            @ConfigInjected
+            int i = 2;
+        }
+        class B extends A {
+            @ConfigInjected
+            int j = 2;
+        }
+        B b = new B();
+
+        YamlConfiguration config = new YamlConfiguration();
+        Configurator<ConfigurationSection> configurator = manager.createYamlConfigurator();
+        configurator.config(config);
+        configurator.inject(b);
+
+        Assertions.assertEquals(0, b.j);
+        Assertions.assertEquals(0, b.i);
+    }
+
+
+    @Test
+    void injectNullTest() {
         class Test {
             @ConfigInjected
             List<String> list = List.of("a", "b");

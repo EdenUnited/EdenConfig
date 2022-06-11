@@ -12,7 +12,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 @Builder
 @Accessors(fluent = true)
@@ -26,14 +29,12 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
 
 
     public void inject(Object o) {
-        Field[] fields = o.getClass().getDeclaredFields();
-        Arrays.stream(fields)
-                .filter(field -> field.isAnnotationPresent(ConfigInjected.class))
-                .forEach(field -> injectField(field, o));
+        streamAnnotatedFields(o.getClass()).forEach(field -> injectField(field, o));
     }
 
     private void injectField(Field field, Object o) {
-        String key = field.getName();
+        ConfigInjected annotation = field.getAnnotation(ConfigInjected.class);
+        String key = annotation.name().isEmpty() ? field.getName() : annotation.name();
         Class<?> type = field.getType();
         if (instanceCreators.containsKey(type)) {
             field.setAccessible(true);
@@ -53,14 +54,12 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
     }
 
     public void save(Object o) {
-        Field[] fields = o.getClass().getDeclaredFields();
-        Arrays.stream(fields)
-                .filter(field -> field.isAnnotationPresent(ConfigInjected.class))
-                .forEach(field -> saveField(field, o));
+        streamAnnotatedFields(o.getClass()).forEach(field -> saveField(field, o));
     }
 
     private <T> void saveField(Field field, Object o) {
-        String key = field.getName();
+        ConfigInjected annotation = field.getAnnotation(ConfigInjected.class);
+        String key = annotation.name().isEmpty() ? field.getName() : annotation.name();
         //noinspection unchecked
         Class<T> type = (Class<T>) field.getType();
         if (instanceCreators.containsKey(type)) {
@@ -87,5 +86,21 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
                 .config(cfg == null ? new YamlConfiguration() : cfg)
                 .instanceCreators(instanceCreators)
                 .build();
+    }
+
+    private Stream<Field> streamAnnotatedFields(Class<?> clazz) {
+        return getSuperClasses(clazz).stream()
+                .map(Class::getDeclaredFields)
+                .flatMap(Arrays::stream)
+                .filter(f -> f.isAnnotationPresent(ConfigInjected.class));
+    }
+
+    private List<Class<?>> getSuperClasses(Class<?> clazz) {
+        List<Class<?>> classes = new ArrayList<>();
+        while (clazz != null) {
+            classes.add(clazz);
+            clazz = clazz.getSuperclass();
+        }
+        return classes;
     }
 }
