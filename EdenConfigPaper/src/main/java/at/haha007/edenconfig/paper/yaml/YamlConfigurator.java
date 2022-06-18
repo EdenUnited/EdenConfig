@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -29,6 +30,9 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
 
 
     public void inject(Object o) {
+        if (o == null) {
+            throw new NullPointerException();
+        }
         streamAnnotatedFields(o.getClass()).forEach(field -> injectField(field, o));
     }
 
@@ -40,7 +44,10 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
             field.setAccessible(true);
             try {
                 field.set(o, instanceCreators.get(type).create(config, key));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
+                Bukkit.getLogger().warning("Cannot create instance:");
+                Bukkit.getLogger().warning("Parent: " + o.getClass().getCanonicalName());
+                Bukkit.getLogger().warning("Class: " + field.getType().getCanonicalName());
                 e.printStackTrace();
             }
             return;
@@ -48,7 +55,10 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
         try {
             field.setAccessible(true);
             child(field.getName()).inject(field.get(o));
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Cannot inject values:");
+            Bukkit.getLogger().warning("Parent: " + o.getClass().getCanonicalName());
+            Bukkit.getLogger().warning("Class: " + field.getType().getCanonicalName());
             e.printStackTrace();
         }
     }
@@ -67,7 +77,10 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
             try {
                 //noinspection unchecked
                 instanceCreators.get(type).save(config, (T) field.get(o), key);
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
+                Bukkit.getLogger().warning("Cannot save value:");
+                Bukkit.getLogger().warning("Parent: " + o.getClass().getCanonicalName());
+                Bukkit.getLogger().warning("Class: " + field.getType().getCanonicalName());
                 e.printStackTrace();
             }
             return;
@@ -75,8 +88,10 @@ public class YamlConfigurator implements Configurator<ConfigurationSection> {
         try {
             field.setAccessible(true);
             child(field.getName()).save(field.get(o));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Cannot save values:");
+            Bukkit.getLogger().warning("Parent: " + o.getClass().getCanonicalName());
+            Bukkit.getLogger().warning("Class: " + field.getType().getCanonicalName());
         }
     }
 
